@@ -1,5 +1,9 @@
 # slicard
 
+[![GitHub stars](https://img.shields.io/github/stars/ufoym/slicard?style=social&label=Star)](https://github.com/ufoym/slicard)
+[![GitHub forks](https://img.shields.io/github/forks/ufoym/slicard?style=social&label=Fork)](https://github.com/ufoym/slicard/fork)
+[![GitHub license](https://img.shields.io/github/license/ufoym/slicard)](./LICENSE)
+
 A slick, configurable CSS card with a bright animated edge and a soft outer bloom.
 **Pure CSS. Zero JavaScript. One `<div>`.**
 

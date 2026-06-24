@@ -60,18 +60,24 @@
   }
   nav.top .brand em { font-style: italic; font-weight: 400; color: var(--accent-2); }
   nav.top .links { pointer-events: auto; display: flex; gap: 26px; align-items: center; }
-  nav.top .links a {
-    font-family: "JetBrains Mono", monospace; font-size: 11px; letter-spacing: 0.04em;
-    color: var(--ink-soft); text-decoration: none; transition: color 0.2s;
+  nav.top .links a.slicard.nav-star {
+    --sc-w: auto;
+    --sc-h: 30px;
+    --sc-radius: 14px;
+    --sc-border-speed: 5s;
+    --sc-border-glow: 0.55;
+    --sc-glow-strength: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+    width: auto; padding: 0 18px;
+    background: transparent;
+    box-shadow: none;
+    font-family: "JetBrains Mono", monospace; font-size: 11px; letter-spacing: 0.06em;
+    color: var(--ink); text-decoration: none;
+    transition: transform 0.2s;
   }
-  nav.top .links a:hover { color: var(--ink); }
-  nav.top .links .cta {
-    padding: 7px 14px; border: 1px solid var(--line); border-radius: 20px;
-    color: var(--ink); background: hsl(210 24% 9% / 0.6);
-    -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
-  }
-  nav.top .links .cta:hover { border-color: var(--accent-2); color: var(--accent-2); }
-  @media (max-width: 720px) { nav.top .links a:not(.cta) { display: none; } }
+  nav.top .links a.slicard.nav-star::after { display: none; }
+  nav.top .links a.slicard.nav-star .label { position: relative; z-index: 3; }
+  nav.top .links a.slicard.nav-star:hover { transform: translateY(-1px); }
 
   /* ---------------- hero ---------------- */
   .hero {
@@ -101,18 +107,27 @@
   .hero .lede b { color: var(--ink); font-weight: 500; }
 
   .hero-ctas { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
-  .btn-primary {
-    font-family: "JetBrains Mono", monospace; font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase;
-    padding: 14px 22px; border-radius: 30px; cursor: pointer; border: none;
-    background: linear-gradient(120deg, var(--accent-2), var(--accent));
-    color: #07131f; font-weight: 600; text-decoration: none;
-    display: inline-flex; align-items: center; gap: 10px;
-    box-shadow: 0 8px 30px hsl(210 80% 30% / 0.4), inset 0 1px 0 hsl(200 90% 90% / 0.3);
-    transition: transform 0.15s, box-shadow 0.2s;
+  .hero-ctas a.slicard.cta-primary {
+    --sc-w: auto;
+    --sc-h: 50px;
+    --sc-radius: 25px;
+    --sc-border-speed: 6s;
+    --sc-border-glow: 0.85;
+    --sc-glow-strength: 0.65;
+    display: inline-flex; align-items: center; justify-content: center;
+    width: auto; padding: 0 28px;
+    font-family: "JetBrains Mono", monospace; font-size: 12px;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--ink); font-weight: 600; text-decoration: none;
+    transition: transform 0.15s;
   }
-  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 40px hsl(210 80% 35% / 0.5), inset 0 1px 0 hsl(200 90% 90% / 0.3); }
-  .btn-primary .arrow { transition: transform 0.2s; }
-  .btn-primary:hover .arrow { transform: translateX(4px); }
+  .hero-ctas a.slicard.cta-primary .label {
+    position: relative; z-index: 3;
+    display: inline-flex; align-items: center; gap: 10px;
+  }
+  .hero-ctas a.slicard.cta-primary .arrow { transition: transform 0.2s; }
+  .hero-ctas a.slicard.cta-primary:hover { transform: translateY(-2px); }
+  .hero-ctas a.slicard.cta-primary:hover .arrow { transform: translateX(4px); }
   .btn-ghost {
     font-family: "JetBrains Mono", monospace; font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase;
     padding: 14px 22px; border-radius: 30px; cursor: pointer;
@@ -693,10 +708,9 @@
 <nav class="top">
   <a href="#" class="brand"><span class="glyph"></span>slicard</a>
   <div class="links">
-    <a href="#radii">Radii</a>
-    <a href="#tones">Tones</a>
-    <a href="#edge">Glow</a>
-    <a href="#playground" class="cta">Try it →</a>
+    <a href="https://github.com/ufoym/slicard" target="_blank" rel="noopener" class="slicard nav-star" aria-label="View slicard on GitHub">
+      <span class="label">GitHub</span>
+    </a>
   </div>
 </nav>
 
@@ -712,7 +726,9 @@
       No frameworks. No build step.
     </p>
     <div class="hero-ctas">
-      <a href="#playground" class="btn-primary">Try it now <span class="arrow">→</span></a>
+      <a href="#playground" class="slicard cta-primary">
+        <span class="label">Try it now <span class="arrow">→</span></span>
+      </a>
       <a href="#radii" class="btn-ghost">Read the brief</a>
     </div>
   </div>
