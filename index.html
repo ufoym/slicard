@@ -1,0 +1,1323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>slicard — A slick, configurable CSS card. One div, zero JS.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --ink:        hsl(200 28% 90%);
+    --ink-soft:   hsl(200 14% 62%);
+    --ink-faint:  hsl(200 12% 42%);
+    --accent:     #3a86c0;
+    --accent-2:   #6cb4e6;
+    --line:       hsl(200 38% 62% / 0.14);
+    --line-soft:  hsl(200 38% 62% / 0.07);
+    --panel:      hsl(210 24% 9% / 0.55);
+  }
+
+  * { box-sizing: border-box; }
+  html { min-height: 100%; scroll-behavior: smooth; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: "DM Sans", system-ui, sans-serif;
+    color: var(--ink);
+    background:
+      radial-gradient(60% 50% at 78% 8%,  hsl(210 70% 30% / 0.35), transparent 60%),
+      radial-gradient(55% 60% at 8% 92%,  hsl(220 65% 32% / 0.30), transparent 62%),
+      radial-gradient(90% 70% at 50% 50%, hsl(210 30% 8%), hsl(210 35% 4%) 70%),
+      #050a10;
+    background-attachment: fixed;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ---------------- progress + nav ---------------- */
+  .progress { position: fixed; top: 0; left: 0; right: 0; height: 2px; z-index: 100; background: transparent; }
+  .progress-bar { height: 100%; width: 0; background: linear-gradient(90deg, var(--accent-2), var(--accent)); transition: width 0.1s linear; }
+
+  nav.top {
+    position: fixed; top: 14px; left: 0; right: 0; z-index: 50;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 11px clamp(18px, 4vw, 48px);
+    pointer-events: none;
+  }
+  nav.top .brand {
+    pointer-events: auto;
+    font-family: "Fraunces", serif; font-size: 17px; font-weight: 500; letter-spacing: -0.01em;
+    color: var(--ink); text-decoration: none;
+    display: inline-flex; align-items: center; gap: 9px;
+  }
+  nav.top .brand .glyph {
+    width: 16px; height: 16px; border-radius: 4px;
+    background: linear-gradient(135deg, var(--accent-2), var(--accent));
+    box-shadow: 0 0 12px hsl(210 80% 50% / 0.5);
+  }
+  nav.top .brand em { font-style: italic; font-weight: 400; color: var(--accent-2); }
+  nav.top .links { pointer-events: auto; display: flex; gap: 26px; align-items: center; }
+  nav.top .links a {
+    font-family: "JetBrains Mono", monospace; font-size: 11px; letter-spacing: 0.04em;
+    color: var(--ink-soft); text-decoration: none; transition: color 0.2s;
+  }
+  nav.top .links a:hover { color: var(--ink); }
+  nav.top .links .cta {
+    padding: 7px 14px; border: 1px solid var(--line); border-radius: 20px;
+    color: var(--ink); background: hsl(210 24% 9% / 0.6);
+    -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+  }
+  nav.top .links .cta:hover { border-color: var(--accent-2); color: var(--accent-2); }
+  @media (max-width: 720px) { nav.top .links a:not(.cta) { display: none; } }
+
+  /* ---------------- hero ---------------- */
+  .hero {
+    position: relative; min-height: 100vh;
+    padding: clamp(80px, 12vh, 130px) clamp(18px, 4vw, 48px) 60px;
+    display: grid; grid-template-columns: 1.1fr 1fr; gap: 40px; align-items: center;
+    max-width: 1320px; margin: 0 auto;
+  }
+  @media (max-width: 960px) { .hero { grid-template-columns: 1fr; min-height: auto; padding-top: 100px; } }
+
+  .hero h1 {
+    font-family: "Fraunces", serif; font-weight: 400;
+    font-size: clamp(48px, 8.5vw, 124px); line-height: 0.92; letter-spacing: -0.028em;
+    margin: 0; color: var(--ink);
+  }
+  .hero h1 em {
+    font-style: normal; font-weight: 500; color: transparent;
+    background: linear-gradient(120deg, var(--accent-2), var(--accent) 55%, #8fc5e8);
+    -webkit-background-clip: text; background-clip: text;
+    display: inline-block;
+  }
+
+  .hero .lede {
+    font-size: 16px; line-height: 1.65; color: var(--ink-soft);
+    max-width: 46ch; margin: 30px 0 38px;
+  }
+  .hero .lede b { color: var(--ink); font-weight: 500; }
+
+  .hero-ctas { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
+  .btn-primary {
+    font-family: "JetBrains Mono", monospace; font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 14px 22px; border-radius: 30px; cursor: pointer; border: none;
+    background: linear-gradient(120deg, var(--accent-2), var(--accent));
+    color: #07131f; font-weight: 600; text-decoration: none;
+    display: inline-flex; align-items: center; gap: 10px;
+    box-shadow: 0 8px 30px hsl(210 80% 30% / 0.4), inset 0 1px 0 hsl(200 90% 90% / 0.3);
+    transition: transform 0.15s, box-shadow 0.2s;
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 40px hsl(210 80% 35% / 0.5), inset 0 1px 0 hsl(200 90% 90% / 0.3); }
+  .btn-primary .arrow { transition: transform 0.2s; }
+  .btn-primary:hover .arrow { transform: translateX(4px); }
+  .btn-ghost {
+    font-family: "JetBrains Mono", monospace; font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 14px 22px; border-radius: 30px; cursor: pointer;
+    border: 1px solid var(--line); background: transparent; color: var(--ink);
+    text-decoration: none; transition: border-color 0.2s, color 0.2s;
+  }
+  .btn-ghost:hover { border-color: var(--accent-2); color: var(--accent-2); }
+
+  /* hero visual — tilted floating rect with annotations */
+  .hero-visual {
+    position: relative; height: 540px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  @media (max-width: 960px) { .hero-visual { height: 420px; } }
+
+  .hero-rect-wrap {
+    position: relative; width: 360px; height: 240px;
+    transform: rotate(-6deg);
+    animation: hero-float 8s ease-in-out infinite;
+  }
+  @keyframes hero-float {
+    0%, 100% { transform: rotate(-6deg) translateY(0); }
+    50%      { transform: rotate(-4.5deg) translateY(-14px); }
+  }
+
+  .hero-rect-wrap .slicard {
+    --sc-w: 100%; --sc-h: 100%;
+    width: 100%; height: 100%;
+  }
+  .hero-rect-wrap .card-content {
+    position: relative; z-index: 3; height: 100%;
+    padding: var(--sc-pad);
+    display: flex; flex-direction: column; justify-content: space-between;
+    pointer-events: none; color: hsl(200 60% 96% / 0.92);
+  }
+  .hero-rect-wrap .card-content .kicker {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10px; letter-spacing: 0.26em; text-transform: uppercase;
+    color: hsl(200 80% 94% / 0.72);
+  }
+  .hero-rect-wrap .card-content .big {
+    font-family: "Fraunces", serif; font-weight: 400; font-style: italic;
+    font-size: 30px; line-height: 1.05; margin: 0;
+    text-shadow: 0 1px 14px hsl(210 60% 8% / 0.5);
+  }
+  .hero-rect-wrap .card-content .row {
+    display: flex; align-items: center; justify-content: space-between;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 10.5px; color: hsl(200 50% 94% / 0.62);
+  }
+
+  /* annotation lines & tags */
+  .annot { position: absolute; pointer-events: none; opacity: 0; animation: annot-in 0.8s 0.6s ease-out forwards; }
+  .annot .tag {
+    font-family: "JetBrains Mono", monospace; font-size: 10px; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--ink-soft);
+    padding: 4px 9px; border: 1px solid var(--line); border-radius: 14px;
+    background: hsl(210 24% 9% / 0.7); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+    white-space: nowrap;
+  }
+  .annot .tag b { color: var(--accent-2); font-weight: 600; }
+  .annot .line { background: var(--line); }
+  @keyframes annot-in { to { opacity: 1; } }
+
+  .annot.a1 { top: 8%; left: -16%; }
+  .annot.a1 .line { position: absolute; top: 50%; left: 100%; width: 80px; height: 1px; }
+  .annot.a1 .dot { position: absolute; top: calc(50% - 2px); left: calc(100% + 78px); width: 5px; height: 5px; border-radius: 50%; background: var(--accent-2); box-shadow: 0 0 8px var(--accent-2); }
+
+  .annot.a2 { bottom: 22%; right: -18%; }
+  .annot.a2 .line { position: absolute; top: 50%; right: 100%; width: 70px; height: 1px; }
+  .annot.a2 .dot { position: absolute; top: calc(50% - 2px); right: calc(100% + 68px); width: 5px; height: 5px; border-radius: 50%; background: var(--accent-2); box-shadow: 0 0 8px var(--accent-2); }
+
+  .annot.a3 { bottom: -4%; left: 28%; }
+  .annot.a3 .line { position: absolute; bottom: 100%; left: 30%; width: 1px; height: 36px; }
+  .annot.a3 .dot { position: absolute; bottom: calc(100% + 34px); left: calc(30% - 2px); width: 5px; height: 5px; border-radius: 50%; background: var(--accent-2); box-shadow: 0 0 8px var(--accent-2); }
+
+  /* scroll cue */
+  .scroll-cue {
+    position: absolute; bottom: 28px; left: 50%; transform: translateX(-50%);
+    font-family: "JetBrains Mono", monospace; font-size: 10px; letter-spacing: 0.2em;
+    color: var(--ink-faint); text-transform: uppercase;
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
+  }
+  .scroll-cue .stick { width: 1px; height: 32px; background: linear-gradient(var(--ink-faint), transparent); animation: cue-pulse 2s ease-in-out infinite; }
+  @keyframes cue-pulse { 0%,100% { opacity: 0.4; transform: scaleY(0.7); } 50% { opacity: 1; transform: scaleY(1); } }
+  @media (max-width: 960px) { .scroll-cue { display: none; } }
+
+  /* ---------------- chapter framework ---------------- */
+  .chapter {
+    max-width: 1320px; margin: 0 auto;
+    padding: clamp(80px, 12vh, 130px) clamp(18px, 4vw, 48px);
+    position: relative;
+  }
+  .ch-head { display: grid; grid-template-columns: 100px 1fr; gap: 30px; align-items: start; margin-bottom: 60px; }
+  @media (max-width: 720px) { .ch-head { grid-template-columns: 1fr; gap: 14px; } }
+  .ch-num {
+    font-family: "Fraunces", serif; font-style: italic; font-weight: 400;
+    font-size: 72px; line-height: 1; color: transparent;
+    -webkit-text-stroke: 1px var(--ink-faint);
+  }
+  .ch-title {
+    font-family: "Fraunces", serif; font-weight: 400;
+    font-size: clamp(30px, 4.5vw, 52px); line-height: 1.05; letter-spacing: -0.02em;
+    margin: 0 0 16px; color: var(--ink);
+  }
+  .ch-title em { font-style: italic; color: var(--accent-2); }
+  .ch-body { font-size: 15px; line-height: 1.7; color: var(--ink-soft); max-width: 58ch; }
+  .ch-body b { color: var(--ink); font-weight: 500; }
+
+  /* reveal-on-scroll */
+  .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.9s ease, transform 0.9s cubic-bezier(0.2, 0.7, 0.2, 1); }
+  .reveal.in { opacity: 1; transform: none; }
+
+  /* ---------------- chapter 01 — radii matrix ---------------- */
+  .radii-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px;
+  }
+  @media (max-width: 860px) { .radii-grid { grid-template-columns: repeat(2, 1fr); } }
+  .radii-cell {
+    aspect-ratio: 1; border-radius: 12px; border: 1px solid var(--line);
+    background: hsl(210 30% 8% / 0.5);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 18px; position: relative; overflow: hidden;
+  }
+  .radii-cell .demo {
+    width: 70%; aspect-ratio: 1;
+    background: linear-gradient(150deg, hsl(206 56% 47%), hsl(206 48% 19%));
+    box-shadow: inset 0 1px 0 hsl(206 90% 90% / 0.14), 0 6px 20px hsl(210 60% 4% / 0.5);
+    position: relative; overflow: hidden;
+  }
+  .radii-cell .demo::before {
+    content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1.6px;
+    background: conic-gradient(from var(--sc-angle, 0deg),
+      hsl(206 70% 70% / 0.18) 0deg, hsl(206 88% 72%) 38deg, hsl(206 100% 92%) 62deg,
+      hsl(206 88% 72%) 90deg, hsl(206 70% 70% / 0.18) 150deg, hsl(206 70% 70% / 0.18) 360deg);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor; mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); mask-composite: exclude;
+    animation: edge-rot 6s linear infinite;
+  }
+  .radii-cell .label {
+    font-family: "JetBrains Mono", monospace; font-size: 10px; letter-spacing: 0.1em;
+    color: var(--ink-faint); margin-top: 14px; text-transform: uppercase;
+  }
+  .radii-cell .label b { color: var(--accent-2); font-weight: 600; }
+
+  /* ---------------- chapter 02 — tones ---------------- */
+  .tones-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; }
+  @media (max-width: 860px) { .tones-grid { grid-template-columns: repeat(2, 1fr); } }
+  .tone-card { display: flex; flex-direction: column; gap: 14px; }
+  .tone-card .slicard.mini { --sc-w: 100%; width: 100%; height: 100px; --sc-pad: 14px; }
+  .tone-card .meta {
+    font-family: "JetBrains Mono", monospace; font-size: 10px; letter-spacing: 0.1em;
+    color: var(--ink-faint); text-transform: uppercase;
+    display: flex; justify-content: space-between; align-items: baseline;
+  }
+  .tone-card .meta b { color: var(--accent-2); font-weight: 600; }
+
+  /* ---------------- chapter 03 — glow edge ---------------- */
+  .edge-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; }
+  @media (max-width: 860px) { .edge-grid { grid-template-columns: repeat(2, 1fr); } }
+  .edge-cell {
+    border-radius: 16px; border: 1px solid var(--line);
+    background: hsl(210 30% 8% / 0.5); padding: 28px;
+    display: flex; flex-direction: column; gap: 20px; align-items: center;
+  }
+  .edge-cell .edge-rect {
+    width: 100%; height: 100px; border-radius: 18px;
+    background: linear-gradient(150deg, hsl(206 56% 47%), hsl(206 48% 19%));
+    position: relative; overflow: hidden;
+  }
+  .edge-cell .edge-rect::before {
+    content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1.6px;
+    background: conic-gradient(from var(--sc-angle, 0deg),
+      hsl(206 70% 70% / 0.18) 0deg, hsl(206 88% 72%) 38deg, hsl(206 100% 92%) 62deg,
+      hsl(206 88% 72%) 90deg, hsl(206 70% 70% / 0.18) 150deg, hsl(206 70% 70% / 0.18) 360deg);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor; mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); mask-composite: exclude;
+    animation: edge-rot 6s linear infinite;
+  }
+  .edge-cell.slow .edge-rect::before { animation-duration: 14s; }
+  .edge-cell.fast .edge-rect::before { animation-duration: 2.5s; }
+  .edge-cell.static .edge-rect::before { animation: none; opacity: 0.55; }
+  @property --sc-angle { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+  @keyframes edge-rot { to { --sc-angle: 360deg; } }
+  .edge-cell .meta {
+    font-family: "JetBrains Mono", monospace; font-size: 10.5px; letter-spacing: 0.08em;
+    color: var(--ink-soft); text-transform: uppercase; text-align: center;
+  }
+  .edge-cell .meta b { color: var(--accent-2); }
+
+  /* ---------------- chapter 03 — outer glow ---------------- */
+  .glow-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; }
+  @media (max-width: 860px) { .glow-grid { grid-template-columns: repeat(2, 1fr); } }
+  .glow-cell {
+    border-radius: 14px; border: 1px solid var(--line);
+    background: hsl(210 30% 8% / 0.5); padding: 26px 22px 22px;
+    display: flex; flex-direction: column; gap: 14px; align-items: center;
+  }
+  .glow-cell .glow-rect {
+    width: 100%; height: 90px; border-radius: 16px;
+    background: linear-gradient(150deg, hsl(206 56% 47%), hsl(206 48% 19%));
+    position: relative; overflow: hidden;
+  }
+  .glow-cell .glow-rect::before {
+    content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1.6px;
+    background: conic-gradient(from var(--sc-angle, 0deg),
+      hsl(206 70% 70% / 0.18) 0deg, hsl(206 88% 72%) 38deg, hsl(206 100% 92%) 62deg,
+      hsl(206 88% 72%) 90deg, hsl(206 70% 70% / 0.18) 150deg, hsl(206 70% 70% / 0.18) 360deg);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor; mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); mask-composite: exclude;
+    animation: edge-rot 6s linear infinite;
+  }
+  .glow-cell.off  .glow-rect { box-shadow: 0 6px 18px hsl(0 0% 0% / 0.38); }
+  .glow-cell.dim  .glow-rect { box-shadow: 0 6px 18px hsl(0 0% 0% / 0.38), 0 0 22px hsl(206 90% 60% / 0.25); }
+  .glow-cell.mid  .glow-rect { box-shadow: 0 6px 18px hsl(0 0% 0% / 0.38), 0 0 44px hsl(206 90% 60% / 0.50); }
+  .glow-cell.full .glow-rect { box-shadow: 0 6px 18px hsl(0 0% 0% / 0.38), 0 0 70px hsl(206 90% 60% / 0.80), 0 0 110px hsl(206 90% 60% / 0.45); }
+  .glow-cell .meta {
+    font-family: "JetBrains Mono", monospace; font-size: 10.5px; letter-spacing: 0.08em;
+    color: var(--ink-soft); text-transform: uppercase; text-align: center;
+  }
+  .glow-cell .meta b { color: var(--accent-2); }
+
+  /* ---------------- chapter 04 — export ---------------- */
+  .export-grid { display: grid; grid-template-columns: 1fr 1.3fr; gap: 40px; align-items: center; }
+  @media (max-width: 860px) { .export-grid { grid-template-columns: 1fr; } }
+  .export-points { display: flex; flex-direction: column; gap: 22px; }
+  .export-point { display: flex; gap: 16px; align-items: flex-start; }
+  .export-point .n {
+    font-family: "Fraunces", serif; font-style: italic; font-weight: 500;
+    font-size: 22px; color: var(--accent-2); line-height: 1; min-width: 28px;
+  }
+  .export-point .t { font-size: 14px; line-height: 1.6; color: var(--ink-soft); }
+  .export-point .t b { color: var(--ink); font-weight: 600; }
+  .code-preview {
+    border-radius: 16px; border: 1px solid var(--line);
+    background: hsl(210 30% 6% / 0.85); overflow: hidden;
+    font-family: "JetBrains Mono", monospace; font-size: 11.5px; line-height: 1.7;
+  }
+  .code-preview .head {
+    padding: 10px 16px; border-bottom: 1px solid var(--line-soft);
+    display: flex; align-items: center; gap: 8px;
+    font-size: 10px; color: var(--ink-faint); letter-spacing: 0.1em; text-transform: uppercase;
+  }
+  .code-preview .head .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); opacity: 0.5; }
+  .code-preview pre { margin: 0; padding: 18px; color: hsl(200 30% 78%); overflow-x: auto; }
+  .code-preview pre .v { color: var(--accent-2); }
+  .code-preview pre .p { color: hsl(190 45% 64%); }
+  .code-preview pre .c { color: var(--ink-faint); font-style: italic; }
+
+  /* ---------------- playground ---------------- */
+  .playground-section {
+    border-top: 1px solid var(--line); margin-top: 40px;
+    padding: clamp(60px, 10vh, 100px) clamp(18px, 4vw, 48px) 80px;
+    max-width: 1320px; margin-left: auto; margin-right: auto;
+  }
+  .pg-head { text-align: center; margin-bottom: 48px; }
+  .pg-head .kicker {
+    font-family: "JetBrains Mono", monospace; font-size: 11px; letter-spacing: 0.2em;
+    text-transform: uppercase; color: var(--accent-2); margin-bottom: 16px;
+    display: inline-flex; align-items: center; gap: 10px;
+  }
+  .pg-head .kicker::before, .pg-head .kicker::after { content: ""; width: 30px; height: 1px; background: var(--line); }
+  .pg-head h2 {
+    font-family: "Fraunces", serif; font-weight: 400;
+    font-size: clamp(34px, 5vw, 56px); line-height: 1; letter-spacing: -0.02em;
+    margin: 0 0 14px; color: var(--ink);
+  }
+  .pg-head h2 em { font-style: italic; color: var(--accent-2); }
+  .pg-head p { font-size: 14px; color: var(--ink-soft); max-width: 50ch; margin: 0 auto; line-height: 1.6; }
+
+  .layout {
+    display: grid; grid-template-columns: minmax(0, 1fr) 326px;
+    gap: 26px; align-items: stretch;
+  }
+  @media (max-width: 920px) { .layout { grid-template-columns: 1fr; } }
+
+  .stage {
+    position: relative; min-height: 560px; border-radius: 22px;
+    border: 1px solid var(--line); overflow: hidden;
+    background:
+      linear-gradient(0deg, hsl(210 30% 6% / 0.4), hsl(210 30% 6% / 0.4)),
+      conic-gradient(from 90deg at 1px 1px, transparent 90deg, var(--line-soft) 0) 0 0 / 32px 32px,
+      radial-gradient(70% 60% at 50% 40%, hsl(210 40% 14% / 0.55), transparent 70%);
+    touch-action: none;
+  }
+  .stage::before {
+    content: ""; position: absolute; inset: 16px;
+    border: 1px dashed var(--line-soft); border-radius: 14px; pointer-events: none;
+  }
+  .stage-readout {
+    position: absolute; right: 16px; top: 14px;
+    display: flex; gap: 14px; font-family: "JetBrains Mono", monospace; font-size: 11px; color: var(--ink-soft);
+    pointer-events: none; z-index: 6;
+  }
+  .stage-readout span b { color: var(--accent-2); font-weight: 600; }
+  .stage-link {
+    position: absolute; top: 13px; left: 16px; z-index: 6;
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 11px 6px 9px; border-radius: 20px; cursor: pointer; user-select: none;
+    font-family: "JetBrains Mono", monospace; font-size: 10.5px; letter-spacing: 0.04em; color: var(--ink-soft);
+    background: hsl(210 24% 9% / 0.62); border: 1px solid var(--line);
+    -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .stage-link:hover { color: var(--ink); border-color: hsl(200 50% 60% / 0.28); }
+
+  .rr-frame { position: absolute; left: 0; top: 0; width: 380px; height: 250px; touch-action: none; }
+  .rr-frame .slicard { --sc-w: 100%; --sc-h: 100%; width: 100%; height: 100%; cursor: grab; }
+  .rr-frame.dragging .slicard { cursor: grabbing; }
+  .card-content {
+    position: relative; z-index: 3; height: 100%;
+    padding: var(--sc-pad);
+    display: flex; flex-direction: column; justify-content: space-between;
+    pointer-events: none; color: hsl(200 60% 96% / 0.92);
+    transition: padding 0.12s ease;
+  }
+  .card-content .kicker { font-family: "JetBrains Mono", monospace; font-size: 10.5px; letter-spacing: 0.26em; text-transform: uppercase; color: hsl(200 80% 94% / 0.72); }
+  .card-content .big {
+    font-family: "Fraunces", serif; font-weight: 400; font-style: italic;
+    font-size: clamp(20px, 3.6vw, 30px); line-height: 1.05; margin: 0;
+    text-shadow: 0 1px 14px hsl(210 60% 8% / 0.5);
+  }
+  .card-content .row { display: flex; align-items: center; justify-content: space-between; font-family: "JetBrains Mono", monospace; font-size: 11px; color: hsl(200 50% 94% / 0.62); }
+
+  .handle { position: absolute; z-index: 5; }
+  .handle::after { content: ""; position: absolute; inset: 0; }
+  .edge { background: hsl(200 90% 80% / 0.0); transition: background 0.15s; }
+  .rr-frame:hover .edge { background: hsl(200 90% 80% / 0.14); }
+  .edge.e, .edge.w { top: 14%; height: 72%; width: 9px; cursor: ew-resize; border-radius: 6px; }
+  .edge.e { right: -4px; } .edge.w { left: -4px; }
+  .edge.n, .edge.s { left: 14%; width: 72%; height: 9px; cursor: ns-resize; border-radius: 6px; }
+  .edge.n { top: -4px; } .edge.s { bottom: -4px; }
+  .edge.e::before, .edge.w::before {
+    content: ""; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+    width: 2px; height: 26px; border-radius: 2px; background: hsl(200 90% 85% / 0.5);
+    opacity: 0; transition: opacity 0.15s;
+  }
+  .edge.n::before, .edge.s::before {
+    content: ""; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+    height: 2px; width: 26px; border-radius: 2px; background: hsl(200 90% 85% / 0.5);
+    opacity: 0; transition: opacity 0.15s;
+  }
+  .rr-frame:hover .edge::before { opacity: 1; }
+  .corner {
+    width: 16px; height: 16px; border-radius: 50%;
+    background: radial-gradient(circle at 50% 40%, #fff, var(--accent-2));
+    box-shadow: 0 0 0 3px hsl(210 30% 6% / 0.7), 0 2px 8px hsl(210 80% 10% / 0.6);
+    opacity: 0; transition: opacity 0.18s ease, transform 0.12s;
+  }
+  .corner:hover { transform: scale(1.18); }
+  .corner.tl { top: -8px; left: -8px; cursor: nwse-resize; }
+  .corner.tr { top: -8px; right: -8px; cursor: nesw-resize; }
+  .corner.br { bottom: -8px; right: -8px; cursor: nwse-resize; }
+  .corner.bl { bottom: -8px; left: -8px; cursor: nesw-resize; }
+
+  /* deck */
+  .deck {
+    border-radius: 20px; border: 1px solid var(--line); background: var(--panel);
+    -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px);
+    padding: 6px; display: flex; flex-direction: column;
+    box-shadow: inset 0 1px 0 hsl(200 80% 90% / 0.05), 0 24px 60px hsl(210 60% 4% / 0.5);
+  }
+  .deck-inner { padding: 18px 18px 14px; }
+  .deck h2 {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.24em; text-transform: uppercase;
+    color: var(--ink-soft); margin: 0 0 4px; display: flex; align-items: center; gap: 8px;
+  }
+  .deck h2 .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px var(--accent); }
+  .group { padding: 16px 0; border-top: 1px solid var(--line-soft); }
+  .group:first-of-type { border-top: 0; }
+  .glabel { font-family: "JetBrains Mono", monospace; font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 12px; }
+  .field { margin-bottom: 12px; }
+  .field:last-child { margin-bottom: 0; }
+  .field .row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+  .field .name { font-size: 11px; color: var(--ink-soft); }
+  .field .val { font-family: "JetBrains Mono", monospace; font-size: 11px; color: var(--accent-2); font-weight: 500; font-variant-numeric: tabular-nums; }
+  input[type="range"] {
+    -webkit-appearance: none; appearance: none; width: 100%; height: 3px; border-radius: 3px;
+    background: hsl(200 20% 30% / 0.6); outline: none; cursor: pointer;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none; width: 15px; height: 15px; border-radius: 50%;
+    background: radial-gradient(circle at 50% 35%, #fff, var(--accent));
+    box-shadow: 0 0 0 1px hsl(210 60% 8% / 0.6), 0 1px 6px hsl(210 80% 10% / 0.7); transition: transform 0.12s;
+  }
+  input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.18); }
+  input[type="range"]::-moz-range-thumb { width: 15px; height: 15px; border: none; border-radius: 50%; background: radial-gradient(circle at 50% 35%, #fff, var(--accent)); }
+  .tones { display: flex; flex-wrap: wrap; gap: 8px; }
+  .tone {
+    position: relative; width: 30px; height: 30px; border-radius: 9px; cursor: pointer;
+    border: 1px solid var(--line); padding: 0; overflow: hidden;
+    box-shadow: inset 0 1px 0 hsl(200 80% 90% / 0.12); transition: transform 0.12s, box-shadow 0.15s;
+  }
+  .tone:hover { transform: translateY(-2px); }
+  .tone.sel { box-shadow: 0 0 0 2px var(--accent-2), 0 0 0 4px hsl(210 30% 6% / 0.85); }
+  .tone.custom {
+    background: conic-gradient(from 0deg, #ff5f6d, #ffc371, #7afcff, #a18cd1, #ff5f6d);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .tone.custom .glyph { font-size: 16px; font-weight: 600; line-height: 1; color: #07131f; pointer-events: none; }
+  .tone.custom input[type="color"] {
+    position: absolute; inset: -6px; width: calc(100% + 12px); height: calc(100% + 12px);
+    border: none; padding: 0; background: none; cursor: pointer; opacity: 0;
+  }
+  .swatch-meta { margin-top: 11px; display: flex; align-items: baseline; gap: 10px; }
+  .swatch-meta .hex { font-family: "JetBrains Mono", monospace; font-size: 12.5px; color: var(--ink); letter-spacing: 0.04em; }
+  .swatch-meta .hsl { font-family: "JetBrains Mono", monospace; font-size: 10.5px; color: var(--ink-faint); }
+  .toggle { display: inline-flex; align-items: center; gap: 9px; font-size: 11px; color: var(--ink-soft); cursor: pointer; user-select: none; }
+  .switch { position: relative; width: 34px; height: 19px; border-radius: 20px; background: hsl(200 20% 28% / 0.7); transition: background 0.2s; flex-shrink: 0; }
+  .switch::after { content: ""; position: absolute; top: 2px; left: 2px; width: 15px; height: 15px; border-radius: 50%; background: var(--ink); transition: transform 0.2s; box-shadow: 0 1px 3px hsl(0 0% 0% / 0.4); }
+  .toggle.on .switch { background: linear-gradient(90deg, var(--accent), var(--accent-2)); }
+  .toggle.on .switch::after { transform: translateX(15px); background: #fff; }
+  .actions { display: flex; gap: 9px; margin-top: 4px; padding: 16px 18px 18px; border-top: 1px solid var(--line-soft); }
+  .btn {
+    flex: 1; font-family: "JetBrains Mono", monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 11px 12px; border-radius: 10px; cursor: pointer; border: 1px solid var(--line);
+    background: hsl(210 30% 14% / 0.5); color: var(--ink); transition: background 0.15s, transform 0.1s, border-color 0.15s;
+  }
+  .btn:hover { background: hsl(210 40% 20% / 0.6); border-color: hsl(200 60% 60% / 0.3); }
+  .btn:active { transform: translateY(1px); }
+
+  .code-wrap { margin-top: 22px; border-radius: 16px; border: 1px solid var(--line); background: hsl(210 30% 6% / 0.7); overflow: hidden; }
+  .code-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 11px 14px 11px 16px; border-bottom: 1px solid var(--line-soft); flex-wrap: wrap; }
+  .code-head .t { font-family: "JetBrains Mono", monospace; font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-soft); }
+  .code-head .right { display: flex; align-items: center; gap: 10px; }
+  .code-head .copy { font-family: "JetBrains Mono", monospace; font-size: 10.5px; letter-spacing: 0.08em; padding: 5px 12px; border-radius: 7px; cursor: pointer; border: 1px solid var(--line); background: transparent; color: var(--accent-2); transition: background 0.15s; }
+  .code-head .copy:hover { background: hsl(210 60% 24% / 0.5); }
+  pre.code { margin: 0; padding: 16px 18px; overflow: hidden; font-family: "JetBrains Mono", monospace; font-size: 12px; line-height: 1.65; color: hsl(200 30% 78%); tab-size: 2; }
+  pre.code .v { color: var(--accent-2); }
+  pre.code .p { color: hsl(190 45% 64%); }
+  pre.code .c { color: var(--ink-faint); font-style: italic; }
+
+  /* ---------------- footer ---------------- */
+  footer {
+    border-top: 1px solid var(--line);
+    padding: 50px clamp(18px, 4vw, 48px) 40px;
+    max-width: 1320px; margin: 0 auto;
+    display: flex; justify-content: space-between; align-items: flex-end; gap: 30px; flex-wrap: wrap;
+  }
+  footer .left .name {
+    font-family: "Fraunces", serif; font-size: 28px; color: var(--ink); margin-bottom: 6px;
+  }
+  footer .left .name em {
+    font-style: normal; font-weight: 500; color: transparent;
+    background: linear-gradient(120deg, var(--accent-2), var(--accent) 55%, #8fc5e8);
+    -webkit-background-clip: text; background-clip: text;
+    display: inline-block;
+  }
+  footer .left .meta { font-family: "JetBrains Mono", monospace; font-size: 11px; color: var(--ink-faint); letter-spacing: 0.06em; }
+  footer .right { font-family: "JetBrains Mono", monospace; font-size: 11px; color: var(--ink-faint); text-align: right; }
+  footer .right a { color: var(--ink-soft); text-decoration: none; }
+  footer .right a:hover { color: var(--accent-2); }
+
+/* =============================================================================
+   slicard  (inlined from slicard.css)
+   ========================================================================== */
+
+@property --sc-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+.slicard {
+  --sc-w: 380px;
+  --sc-h: 250px;
+  --sc-radius: 34px;
+  --sc-radius-tl: var(--sc-radius);
+  --sc-radius-tr: var(--sc-radius);
+  --sc-radius-br: var(--sc-radius);
+  --sc-radius-bl: var(--sc-radius);
+  --sc-pad: max(22px,
+    max(var(--sc-radius-tl), var(--sc-radius-tr),
+        var(--sc-radius-br), var(--sc-radius-bl)) * 0.62);
+  --sc-hue: 206;
+  --sc-sat: 55%;
+  --sc-light: 40%;
+  --sc-grad-angle: 158deg;
+  --sc-fill-1: hsl(var(--sc-hue) var(--sc-sat) calc(var(--sc-light) + 13%));
+  --sc-fill-2: hsl(var(--sc-hue) calc(var(--sc-sat) - 8%) calc(var(--sc-light) - 15%));
+  --sc-border-width: 1.6px;
+  --sc-border-speed: 6s;
+  --sc-border-glow: 0.7;
+  --sc-edge-base: hsl(var(--sc-hue) 88% 72%);
+  --sc-edge-peak: hsl(var(--sc-hue) 100% 92%);
+  --sc-glow-strength: 0.55;
+  --sc-glow-color: hsl(var(--sc-hue) 82% 56%);
+  position: relative;
+  width: var(--sc-w);
+  height: var(--sc-h);
+  border-radius:
+    var(--sc-radius-tl) var(--sc-radius-tr)
+    var(--sc-radius-br) var(--sc-radius-bl);
+  background:
+    radial-gradient(120% 80% at 50% -10%,
+      hsl(var(--sc-hue) 70% 88% / 0.12) 0%,
+      transparent 55%),
+    linear-gradient(var(--sc-grad-angle), var(--sc-fill-1), var(--sc-fill-2));
+  box-shadow:
+    0 calc(14px * var(--sc-glow-strength)) calc(34px * var(--sc-glow-strength))
+      hsl(0 0% 0% / 0.38),
+    0 0 calc(70px * var(--sc-glow-strength))
+      hsl(var(--sc-hue) 82% 56% / calc(0.45 * var(--sc-glow-strength))),
+    inset 0 1px 0 hsl(var(--sc-hue) 90% 90% / 0.14),
+    inset 0 0 30px hsl(var(--sc-hue) 60% 10% / 0.35);
+  isolation: isolate;
+}
+
+.slicard::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: var(--sc-border-width);
+  background:
+    conic-gradient(from var(--sc-angle),
+      hsl(var(--sc-hue) 70% 70% / 0.18) 0deg,
+      var(--sc-edge-base) 38deg,
+      var(--sc-edge-peak) 62deg,
+      var(--sc-edge-base) 90deg,
+      hsl(var(--sc-hue) 70% 70% / 0.18) 150deg,
+      hsl(var(--sc-hue) 70% 70% / 0.18) 360deg);
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+          mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+          mask-composite: exclude;
+  filter: drop-shadow(0 0 calc(6px * var(--sc-border-glow))
+    hsl(var(--sc-hue) 95% 75% / calc(0.9 * var(--sc-border-glow))));
+  animation: sc-rotate var(--sc-border-speed) linear infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.slicard::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: var(--sc-border-width);
+  background: radial-gradient(78% 46% at 50% 0%,
+    hsl(var(--sc-hue) 100% 96% / 0.85) 0%,
+    hsl(var(--sc-hue) 100% 90% / 0) 70%);
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+          mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+          mask-composite: exclude;
+  pointer-events: none;
+  z-index: 2;
+}
+
+@keyframes sc-rotate {
+  to { --sc-angle: 360deg; }
+}
+
+.slicard[data-anim="off"]::before {
+  opacity: 0;
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .slicard::before { animation-play-state: paused; }
+}
+</style>
+</head>
+<body id="top">
+
+<div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+
+<nav class="top">
+  <a href="#" class="brand"><span class="glyph"></span>slicard</a>
+  <div class="links">
+    <a href="#radii">Radii</a>
+    <a href="#tones">Tones</a>
+    <a href="#edge">Glow</a>
+    <a href="#playground" class="cta">Try it →</a>
+  </div>
+</nav>
+
+<!-- ================= HERO ================= -->
+<section class="hero">
+  <div class="hero-text">
+    <h1>
+      sli<em>card</em>
+    </h1>
+    <p class="lede">
+      A <b>configurable card</b> with a bright animated edge and a soft outer bloom.
+      <b>Pure CSS</b>, zero JavaScript.
+      No frameworks. No build step.
+    </p>
+    <div class="hero-ctas">
+      <a href="#playground" class="btn-primary">Try it now <span class="arrow">→</span></a>
+      <a href="#radii" class="btn-ghost">Read the brief</a>
+    </div>
+  </div>
+
+  <div class="hero-visual">
+    <div class="hero-rect-wrap">
+      <div class="slicard" id="heroRect"
+           style="--sc-w:360px; --sc-h:240px; --sc-radius:38px; --sc-hue:206; --sc-sat:55%; --sc-light:40%; --sc-grad-angle:158deg; --sc-border-width:1.6px; --sc-border-speed:6s; --sc-border-glow:0.7; --sc-glow-strength:0.6;">
+        <div class="card-content">
+          <span class="kicker">card · 01</span>
+          <h3 class="big">Edge of light</h3>
+          <div class="row"><span>380 × 250</span><span>r 38</span></div>
+        </div>
+      </div>
+      <div class="annot a1"><span class="tag">radius · <b>38px</b></span><span class="line"></span><span class="dot"></span></div>
+      <div class="annot a2"><span class="tag">glow · <b>0.6</b></span><span class="line"></span><span class="dot"></span></div>
+      <div class="annot a3"><span class="tag">edge · <b>6s</b></span><span class="line"></span><span class="dot"></span></div>
+    </div>
+  </div>
+
+  <div class="scroll-cue">
+    <span>scroll</span>
+    <span class="stick"></span>
+  </div>
+</section>
+
+<!-- ================= CHAPTER 01 — RADII ================= -->
+<section class="chapter" id="radii">
+  <div class="ch-head reveal">
+    <div class="ch-num">01</div>
+    <div>
+      <h2 class="ch-title">Corners that <em>breathe</em>.</h2>
+      <p class="ch-body">
+        Four independent radii — <b>top-left, top-right, bottom-right, bottom-left</b>. Pull a corner
+        handle on the playground to set one, or toggle <b>Link corners</b> to move them in lockstep.
+        Inner content padding grows with the radius, so type never collides with the curve.
+      </p>
+    </div>
+  </div>
+  <div class="radii-grid reveal">
+    <div class="radii-cell"><div class="demo" style="border-radius:4px"></div><div class="label">r · <b>4</b></div></div>
+    <div class="radii-cell"><div class="demo" style="border-radius:16px"></div><div class="label">r · <b>16</b></div></div>
+    <div class="radii-cell"><div class="demo" style="border-radius:38px"></div><div class="label">r · <b>38</b></div></div>
+    <div class="radii-cell"><div class="demo" style="border-radius:0 60px 0 60px"></div><div class="label">per-corner</div></div>
+  </div>
+</section>
+
+<!-- ================= CHAPTER 02 — TONES ================= -->
+<section class="chapter" id="tones">
+  <div class="ch-head reveal">
+    <div class="ch-num">02</div>
+    <div>
+      <h2 class="ch-title">Tuned to a <em>hue</em>.</h2>
+      <p class="ch-body">
+        Six preset palettes — Azure, Terracotta, Ember, Violet, Teal, Moss — or any custom color
+        via the picker. A single <b>hue</b> drives the fill, the edge, and the bloom together, so
+        every part of the card stays in the same key. <b>Brightness</b> lightens or darkens the
+        body; the <b>gradient angle</b> sets where the light appears to come from.
+      </p>
+    </div>
+  </div>
+  <div class="tones-grid reveal">
+    <div class="tone-card">
+      <div class="slicard mini" style="--sc-radius:20px; --sc-hue:206; --sc-sat:55%; --sc-light:40%;"></div>
+      <div class="meta"><span>azure</span><b>h 206</b></div>
+    </div>
+    <div class="tone-card">
+      <div class="slicard mini" style="--sc-radius:20px; --sc-hue:18; --sc-sat:56%; --sc-light:40%;"></div>
+      <div class="meta"><span>terracotta</span><b>h 18</b></div>
+    </div>
+    <div class="tone-card">
+      <div class="slicard mini" style="--sc-radius:20px; --sc-hue:8; --sc-sat:62%; --sc-light:40%;"></div>
+      <div class="meta"><span>ember</span><b>h 8</b></div>
+    </div>
+    <div class="tone-card">
+      <div class="slicard mini" style="--sc-radius:20px; --sc-hue:268; --sc-sat:45%; --sc-light:40%;"></div>
+      <div class="meta"><span>violet</span><b>h 268</b></div>
+    </div>
+    <div class="tone-card">
+      <div class="slicard mini" style="--sc-radius:20px; --sc-hue:182; --sc-sat:46%; --sc-light:40%;"></div>
+      <div class="meta"><span>teal</span><b>h 182</b></div>
+    </div>
+    <div class="tone-card">
+      <div class="slicard mini" style="--sc-radius:20px; --sc-hue:140; --sc-sat:38%; --sc-light:40%;"></div>
+      <div class="meta"><span>moss</span><b>h 140</b></div>
+    </div>
+    <div class="tone-card">
+      <div class="slicard mini" style="--sc-radius:20px; --sc-hue:206; --sc-sat:55%; --sc-light:52%;"></div>
+      <div class="meta"><span>brighter</span><b>l 52</b></div>
+    </div>
+    <div class="tone-card">
+      <div class="slicard mini" style="--sc-radius:20px; --sc-hue:206; --sc-sat:55%; --sc-light:24%;"></div>
+      <div class="meta"><span>darker</span><b>l 24</b></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= CHAPTER 03 — GLOW EDGE ================= -->
+<section class="chapter" id="edge">
+  <div class="ch-head reveal">
+    <div class="ch-num">03</div>
+    <div>
+      <h2 class="ch-title">An edge that <em>rotates</em>.</h2>
+      <p class="ch-body">
+        A conic gradient masked to a 1.6&nbsp;px ring creates a bright arc that sweeps the border
+        forever. Tune the <b>period</b> from a lazy 14&nbsp;s to a frenetic 2.5&nbsp;s, or kill the
+        animation entirely and keep the static top-center highlight.
+      </p>
+    </div>
+  </div>
+  <div class="edge-grid reveal">
+    <div class="edge-cell slow"><div class="edge-rect"></div><div class="meta">slow · <b>14s</b></div></div>
+    <div class="edge-cell"><div class="edge-rect"></div><div class="meta">default · <b>6s</b></div></div>
+    <div class="edge-cell fast"><div class="edge-rect"></div><div class="meta">fast · <b>2.5s</b></div></div>
+    <div class="edge-cell static"><div class="edge-rect"></div><div class="meta">static · <b>off</b></div></div>
+  </div>
+</section>
+
+<!-- ================= CHAPTER 04 — OUTER GLOW ================= -->
+<section class="chapter" id="glow">
+  <div class="ch-head reveal">
+    <div class="ch-num">04</div>
+    <div>
+      <h2 class="ch-title">A soft outer <em>bloom</em>.</h2>
+      <p class="ch-body">
+        A second shadow layer spreads the hue into the surrounding dark — the card doesn't sit on
+        the page, it <b>glows</b> into it. Dial <b>Outer glow</b> from a faint 0&nbsp;halo to a
+        full 1.0&nbsp;bloom that bleeds far past the border.
+      </p>
+    </div>
+  </div>
+  <div class="glow-grid reveal">
+    <div class="glow-cell off"><div class="glow-rect"></div><div class="meta">off · <b>0.00</b></div></div>
+    <div class="glow-cell dim"><div class="glow-rect"></div><div class="meta">dim · <b>0.25</b></div></div>
+    <div class="glow-cell mid"><div class="glow-rect"></div><div class="meta">default · <b>0.55</b></div></div>
+    <div class="glow-cell full"><div class="glow-rect"></div><div class="meta">full · <b>1.00</b></div></div>
+  </div>
+</section>
+
+<!-- ================= CHAPTER 05 — EXPORT ================= -->
+<section class="chapter" id="export">
+  <div class="ch-head reveal">
+    <div class="ch-num">05</div>
+    <div>
+      <h2 class="ch-title">Copy. <em>Paste.</em> Done.</h2>
+      <p class="ch-body">
+        The export reads your live configuration and emits a single block of standalone CSS — one
+        <code style="font-family:'JetBrains Mono',monospace;color:var(--accent-2)">.slicard</code>
+        class, no dependencies, no custom-property runtime. Drop it in any project.
+      </p>
+    </div>
+  </div>
+  <div class="export-grid reveal">
+    <div class="export-points">
+      <div class="export-point"><span class="n">i</span><div class="t"><b>One element.</b> A single <code style="font-family:'JetBrains Mono',monospace;color:var(--accent-2)">&lt;div class="slicard"&gt;</code> is all the markup you need.</div></div>
+      <div class="export-point"><span class="n">ii</span><div class="t"><b>Zero runtime.</b> All values are inlined — no CSS custom-property cascade to maintain.</div></div>
+      <div class="export-point"><span class="n">iii</span><div class="t"><b>Reduced-motion safe.</b> The animation pauses for users who prefer less motion.</div></div>
+      <div class="export-point"><span class="n">iv</span><div class="t"><b>Editable later.</b> The output is readable, hand-formatted CSS — not minified soup.</div></div>
+    </div>
+    <div class="code-preview">
+      <div class="head"><span class="dot"></span> slicard.css · excerpt</div>
+<pre><span class="c">/* HTML: &lt;div class="slicard"&gt;&lt;/div&gt; */</span>
+<span class="p">.slicard</span> {
+  position: relative; width: <span class="v">380px</span>; height: <span class="v">250px</span>;
+  border-radius: <span class="v">34px</span>;
+  background:
+    radial-gradient(120% 80% at 50% -10%, <span class="v">hsl(206 70% 88% / .12)</span>, transparent 55%),
+    linear-gradient(<span class="v">158deg</span>, <span class="v">hsl(206 56% 47%)</span>, <span class="v">hsl(206 48% 19%)</span>);
+  box-shadow: 0 0 <span class="v">38px</span> <span class="v">hsl(206 82% 56% / .25)</span>, …;
+}</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ================= PLAYGROUND ================= -->
+<section class="playground-section" id="playground">
+  <div class="pg-head reveal">
+    <div class="kicker">try it now</div>
+    <h2>The <em>playground</em>.</h2>
+    <p>Drag edges to resize · drag corners to set radii · drag inside to move. Tweak color and animation in the deck, then copy the CSS.</p>
+  </div>
+
+  <div class="layout">
+    <div class="stage" id="stage">
+      <div class="stage-link toggle on" id="linkToggle"><span class="switch"></span><span>Link corners</span></div>
+      <div class="stage-readout">
+        <span>W&nbsp;<b id="ro-w">380</b></span>
+        <span>H&nbsp;<b id="ro-h">250</b></span>
+        <span>R&nbsp;<b id="ro-r">34</b></span>
+      </div>
+
+      <div class="rr-frame" id="frame">
+        <div class="slicard" id="rect">
+          <div class="card-content">
+            <span class="kicker" id="cc-hex">#3A86C0</span>
+            <h3 class="big">slicard</h3>
+            <div class="row"><span id="cc-size">380 × 250</span><span id="cc-radius">r 34</span></div>
+          </div>
+        </div>
+
+        <div class="handle edge n" data-edge="n"></div>
+        <div class="handle edge e" data-edge="e"></div>
+        <div class="handle edge s" data-edge="s"></div>
+        <div class="handle edge w" data-edge="w"></div>
+
+        <div class="handle corner tl" data-corner="tl"></div>
+        <div class="handle corner tr" data-corner="tr"></div>
+        <div class="handle corner br" data-corner="br"></div>
+        <div class="handle corner bl" data-corner="bl"></div>
+      </div>
+    </div>
+
+    <aside class="deck">
+      <div class="deck-inner">
+        <h2><span class="dot"></span> Control Deck</h2>
+
+        <div class="group">
+          <div class="glabel">Color &amp; Brightness</div>
+          <div class="tones" id="tones-palette"></div>
+          <div class="swatch-meta">
+            <span class="hex" id="hexv">#3A86C0</span>
+            <span class="hsl" id="hslv">hue 206 · sat 55% · light 40%</span>
+          </div>
+          <div class="field" style="margin-top:14px">
+            <div class="row"><span class="name">Brightness</span><span class="val" id="lightv">40%</span></div>
+            <input type="range" id="light" min="12" max="64" step="1" value="40" />
+          </div>
+          <div class="field">
+            <div class="row"><span class="name">Gradient angle</span><span class="val" id="anglev">158°</span></div>
+            <input type="range" id="angle" min="0" max="360" step="1" value="158" />
+          </div>
+        </div>
+
+        <div class="group">
+          <div class="glabel">Glow Edge</div>
+          <div class="field">
+            <div class="row">
+              <span class="name">Animation</span>
+              <label class="toggle on" id="animToggle"><span class="switch"></span><span>On</span></label>
+            </div>
+          </div>
+          <div class="field">
+            <div class="row"><span class="name">Speed</span><span class="val" id="spv">6.7s/turn</span></div>
+            <input type="range" id="sp" min="1" max="100" step="1" value="50" />
+          </div>
+          <div class="field">
+            <div class="row"><span class="name">Outer glow</span><span class="val" id="gv">0.55</span></div>
+            <input type="range" id="g" min="0" max="1" step="0.01" value="0.55" />
+          </div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn" id="resetBtn">Reset</button>
+        <button class="btn" id="randomBtn">Surprise</button>
+      </div>
+    </aside>
+  </div>
+
+  <div class="code-wrap">
+    <div class="code-head">
+      <span class="t">Live CSS · Zero-dependency standalone</span>
+      <div class="right">
+        <button class="copy" id="copyBtn">copy</button>
+      </div>
+    </div>
+    <pre class="code" id="code"></pre>
+  </div>
+</section>
+
+<!-- ================= FOOTER ================= -->
+<footer>
+  <div class="left">
+    <div class="name">sli<em>card</em></div>
+  </div>
+  <div class="right">
+    Made with Love by <a href="https://ufoym.com" style="color:var(--accent-2);text-decoration:none">ufoym</a><br />
+    <a href="#top">back to top ↑</a>
+  </div>
+</footer>
+
+<script>
+(() => {
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  const stage = $("stage"), frame = $("frame"), rect = $("rect");
+  const MIN_W = 120, MIN_H = 90, PAD = 18;
+
+  const DEFAULT = {
+    x: 0, y: 0, w: 380, h: 250,
+    radii: { tl: 34, tr: 34, br: 34, bl: 34 }, linked: true,
+    tone: 0, hue: 206, sat: 55, light: 40, angle: 158,
+    bw: 1.6, speed: 50, glow: 0.55, anim: true,
+  };
+  let S = structuredClone(DEFAULT);
+
+  const TONES = [
+    { name: "Azure",      hue: 206, sat: 55 },
+    { name: "Terracotta", hue: 18,  sat: 56 },
+    { name: "Ember",      hue: 8,   sat: 62 },
+    { name: "Violet",     hue: 268, sat: 45 },
+    { name: "Teal",       hue: 182, sat: 46 },
+    { name: "Moss",       hue: 140, sat: 38 },
+  ];
+
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const speedToPeriod = (sp) => (12.2 - (sp / 100) * 11).toFixed(1);
+  const hexToHsl = (hex) => {
+    let r = parseInt(hex.slice(1, 3), 16) / 255, g = parseInt(hex.slice(3, 5), 16) / 255, b = parseInt(hex.slice(5, 7), 16) / 255;
+    const mx = Math.max(r, g, b), mn = Math.min(r, g, b);
+    let h = 0, s = 0, l = (mx + mn) / 2;
+    if (mx !== mn) {
+      const d = mx - mn;
+      s = l > 0.5 ? d / (2 - mx - mn) : d / (mx + mn);
+      if (mx === r) h = (g - b) / d + (g < b ? 6 : 0);
+      else if (mx === g) h = (b - r) / d + 2; else h = (r - g) / d + 4;
+      h *= 60;
+    }
+    return { h: Math.round(h), s: Math.round(s * 100), l: Math.round(l * 100) };
+  };
+  const hslToHex = (h, s, l) => {
+    s /= 100; l /= 100;
+    const k = (n) => (n + h / 30) % 12, a = s * Math.min(l, 1 - l);
+    const f = (n) => { const c = l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1))); return Math.round(255 * c).toString(16).padStart(2, "0"); };
+    return `#${f(0)}${f(8)}${f(4)}`;
+  };
+
+  function centerRect() {
+    const r = stage.getBoundingClientRect();
+    S.x = Math.round((r.width - S.w) / 2);
+    S.y = Math.round((r.height - S.h) / 2);
+  }
+
+  function apply() {
+    const r = stage.getBoundingClientRect();
+    S.x = clamp(S.x, PAD, Math.max(PAD, r.width - S.w - PAD));
+    S.y = clamp(S.y, PAD, Math.max(PAD, r.height - S.h - PAD));
+    frame.style.left = S.x + "px"; frame.style.top = S.y + "px";
+    frame.style.width = S.w + "px"; frame.style.height = S.h + "px";
+
+    const st = rect.style;
+    st.setProperty("--sc-radius-tl", S.radii.tl + "px");
+    st.setProperty("--sc-radius-tr", S.radii.tr + "px");
+    st.setProperty("--sc-radius-br", S.radii.br + "px");
+    st.setProperty("--sc-radius-bl", S.radii.bl + "px");
+    st.setProperty("--sc-hue", S.hue);
+    st.setProperty("--sc-sat", S.sat + "%");
+    st.setProperty("--sc-light", S.light + "%");
+    st.setProperty("--sc-grad-angle", S.angle + "deg");
+    st.setProperty("--sc-border-width", S.bw + "px");
+    st.setProperty("--sc-border-speed", speedToPeriod(S.speed) + "s");
+    st.setProperty("--sc-glow-strength", S.glow);
+    rect.setAttribute("data-anim", S.anim ? "on" : "off");
+
+    $("ro-w").textContent = S.w;
+    $("ro-h").textContent = S.h;
+    $("ro-r").textContent = S.linked ? S.radii.tl : "•";
+    $("cc-size").textContent = `${S.w} × ${S.h}`;
+    $("cc-radius").textContent = S.linked ? `r ${S.radii.tl}` : `r ${S.radii.tl}·${S.radii.tr}·${S.radii.br}·${S.radii.bl}`;
+    $("lightv").textContent = S.light + "%";
+    $("anglev").textContent = S.angle + "°";
+    $("spv").textContent = speedToPeriod(S.speed) + "s/turn";
+    $("gv").textContent = S.glow.toFixed(2);
+
+    const hex = hslToHex(S.hue, S.sat, S.light).toUpperCase();
+    $("hexv").textContent = hex;
+    $("cc-hex").textContent = hex;
+    $("hslv").textContent = `hue ${S.hue} · sat ${S.sat}% · light ${S.light}%`;
+    const colorInput = $("color"); if (colorInput) colorInput.value = hex;
+
+    $("light").value = S.light; $("angle").value = S.angle;
+    $("sp").value = S.speed; $("g").value = S.glow;
+    $("linkToggle").classList.toggle("on", S.linked);
+    $("animToggle").classList.toggle("on", S.anim);
+
+    document.querySelectorAll("#tones-palette .tone").forEach((el, idx) => {
+      const isCustom = el.classList.contains("custom");
+      el.classList.toggle("sel", isCustom ? S.tone === "custom" : S.tone === idx);
+    });
+
+    updateCode();
+  }
+
+  // ---- live CSS export ----
+  const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const hl = (s) => esc(s)
+    .replace(/(\/\*[\s\S]*?\*\/)/g, '<span class="c">$1</span>')
+    .replace(/(--sc-[\w-]+)/g, '<span class="p">$1</span>');
+
+  function fullCss() {
+    const H = S.hue, Sa = S.sat, L = S.light, g = S.glow, bw = S.bw;
+    const r = `${S.radii.tl}px ${S.radii.tr}px ${S.radii.br}px ${S.radii.bl}px`;
+    const n = (x) => Math.round(x * 10) / 10;
+    const setup = `content: ""; position: absolute; inset: 0; border-radius: inherit; padding: ${bw}px;`;
+    const mask = `-webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude;
+  pointer-events: none;`;
+    const afterBg = `background: radial-gradient(78% 46% at 50% 0%, hsl(${H} 100% 96% / .85), hsl(${H} 100% 90% / 0) 70%);`;
+    const head = `/* slicard — standalone.  HTML: <div class="slicard"></div> */`;
+    const prop = `@property --sc-angle { syntax: "<angle>"; inherits: false; initial-value: 0deg; }`;
+    const base = `.slicard {
+  position: relative; width: ${S.w}px; height: ${S.h}px; border-radius: ${r};
+  background:
+    radial-gradient(120% 80% at 50% -10%, hsl(${H} 70% 88% / .12), transparent 55%),
+    linear-gradient(${S.angle}deg, hsl(${H} ${Sa}% ${L + 13}%), hsl(${H} ${Sa - 8}% ${L - 15}%));
+  box-shadow:
+    0 ${n(14 * g)}px ${n(34 * g)}px hsl(0 0% 0% / .38),
+    0 0 ${n(70 * g)}px hsl(${H} 82% 56% / ${n(0.45 * g)}),
+    inset 0 1px 0 hsl(${H} 90% 90% / .14),
+    inset 0 0 30px hsl(${H} 60% 10% / .35);
+  isolation: isolate;
+}`;
+    const before = `.slicard::before {  /* rotating bright edge */
+  background: conic-gradient(from var(--sc-angle),
+    hsl(${H} 70% 70% / .18) 0deg, hsl(${H} 88% 72%) 38deg, hsl(${H} 100% 92%) 62deg,
+    hsl(${H} 88% 72%) 90deg, hsl(${H} 70% 70% / .18) 150deg, hsl(${H} 70% 70% / .18) 360deg);
+  filter: drop-shadow(0 0 4px hsl(${H} 95% 75% / .63));
+  animation: sc-rotate ${speedToPeriod(S.speed)}s linear infinite;
+}`;
+    const keys = `@keyframes sc-rotate { to { --sc-angle: 360deg; } }`;
+
+    if (!S.anim) {
+      return [head, base,
+`.slicard::after {  /* static top highlight */
+  ${setup}
+  ${afterBg}
+  ${mask}
+}`].join("\n\n");
+    }
+    return [head, prop, base,
+`.slicard::before, .slicard::after {
+  ${setup}
+  ${mask}
+}`,
+      before,
+`.slicard::after {  /* static top highlight */
+  ${afterBg}
+}`, keys].join("\n\n");
+  }
+
+  function updateCode() {
+    $("code").innerHTML = hl(fullCss());
+  }
+
+  // ---- drag engine ----
+  let active = null, lastPointer = null;
+
+  function onDown(e, type, sub) {
+    e.preventDefault(); e.stopPropagation();
+    active = { type, sub, px: e.clientX, py: e.clientY, snap: structuredClone(S) };
+    frame.classList.add("dragging");
+    if (type === "corner") { const el = document.querySelector(".corner." + sub); if (el) el.style.opacity = 1; }
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+  }
+
+  function onMove(e) {
+    if (!active) return;
+    const dx = e.clientX - active.px, dy = e.clientY - active.py;
+    const snap = active.snap, sr = stage.getBoundingClientRect();
+
+    if (active.type === "move") {
+      S.x = clamp(snap.x + dx, PAD, sr.width - snap.w - PAD);
+      S.y = clamp(snap.y + dy, PAD, sr.height - snap.h - PAD);
+    } else if (active.type === "edge") {
+      if (active.sub === "e") S.w = clamp(snap.w + dx, MIN_W, sr.width - snap.x - PAD);
+      else if (active.sub === "s") S.h = clamp(snap.h + dy, MIN_H, sr.height - snap.y - PAD);
+      else if (active.sub === "w") { const nw = clamp(snap.w - dx, MIN_W, snap.x + snap.w - PAD); S.x = snap.x + (snap.w - nw); S.w = nw; }
+      else if (active.sub === "n") { const nh = clamp(snap.h - dy, MIN_H, snap.y + snap.h - PAD); S.y = snap.y + (snap.h - nh); S.h = nh; }
+      clampRadii();
+    } else if (active.type === "corner") {
+      const sign = { tl: [1, 1], tr: [-1, 1], br: [-1, -1], bl: [1, -1] }[active.sub];
+      const delta = (dx * sign[0] + dy * sign[1]) / 1.414;
+      const maxR = Math.min(snap.w, snap.h) / 2;
+      const nr = clamp(Math.round(snap.radii[active.sub] + delta), 0, maxR);
+      if (S.linked) S.radii = { tl: nr, tr: nr, br: nr, bl: nr };
+      else S.radii[active.sub] = nr;
+    }
+    apply();
+  }
+
+  function onUp() {
+    active = null; frame.classList.remove("dragging");
+    window.removeEventListener("pointermove", onMove);
+    window.removeEventListener("pointerup", onUp);
+    if (lastPointer) updateProximity(lastPointer.x, lastPointer.y);
+  }
+
+  function clampRadii() {
+    const maxR = Math.min(S.w, S.h) / 2;
+    for (const k of ["tl", "tr", "br", "bl"]) S.radii[k] = clamp(S.radii[k], 0, maxR);
+  }
+
+  rect.addEventListener("pointerdown", (e) => onDown(e, "move"));
+  document.querySelectorAll(".edge").forEach((el) => el.addEventListener("pointerdown", (e) => onDown(e, "edge", el.dataset.edge)));
+  document.querySelectorAll(".corner").forEach((el) => el.addEventListener("pointerdown", (e) => onDown(e, "corner", el.dataset.corner)));
+
+  const cornerEls = [...document.querySelectorAll(".corner")];
+  function updateProximity(px, py) {
+    for (const c of cornerEls) {
+      const r = c.getBoundingClientRect();
+      const d = Math.hypot(px - (r.x + r.width / 2), py - (r.y + r.height / 2));
+      c.style.opacity = clamp(1 - (d - 24) / 120, 0, 1).toFixed(3);
+    }
+  }
+  stage.addEventListener("pointermove", (e) => {
+    lastPointer = { x: e.clientX, y: e.clientY };
+    if (!active) updateProximity(e.clientX, e.clientY);
+  });
+  stage.addEventListener("pointerleave", () => {
+    lastPointer = null;
+    if (!active) for (const c of cornerEls) c.style.opacity = 0;
+  });
+
+  // ---- deck controls ----
+  $("light").addEventListener("input", (e) => { S.light = +e.target.value; apply(); });
+  $("angle").addEventListener("input", (e) => { S.angle = +e.target.value; apply(); });
+  $("sp").addEventListener("input", (e) => { S.speed = +e.target.value; apply(); });
+  $("g").addEventListener("input", (e) => { S.glow = +e.target.value; apply(); });
+  $("linkToggle").addEventListener("click", () => {
+    S.linked = !S.linked;
+    if (S.linked) { const v = S.radii.tl; S.radii = { tl: v, tr: v, br: v, bl: v }; }
+    apply();
+  });
+  $("animToggle").addEventListener("click", () => { S.anim = !S.anim; apply(); });
+  $("resetBtn").addEventListener("click", () => { S = structuredClone(DEFAULT); centerRect(); apply(); });
+  $("randomBtn").addEventListener("click", () => {
+    S.tone = "custom";
+    S.hue = Math.floor(Math.random() * 360);
+    S.sat = 42 + Math.floor(Math.random() * 38);
+    S.light = 26 + Math.floor(Math.random() * 24);
+    S.angle = Math.floor(Math.random() * 360);
+    const v = 10 + Math.floor(Math.random() * 70);
+    S.radii = { tl: v, tr: v, br: v, bl: v }; S.linked = true;
+    S.speed = 12 + Math.floor(Math.random() * 80);
+    S.glow = +(0.3 + Math.random() * 0.6).toFixed(2);
+    clampRadii(); apply();
+  });
+
+  // build tone swatches in the deck
+  const tonesEl = $("tones-palette");
+  TONES.forEach((t, i) => {
+    const b = document.createElement("button");
+    b.className = "tone"; b.title = t.name;
+    b.style.background = `linear-gradient(150deg, ${hslToHex(t.hue, t.sat, 52)}, ${hslToHex(t.hue, t.sat - 8, 30)})`;
+    b.addEventListener("click", () => { S.tone = i; S.hue = t.hue; S.sat = t.sat; apply(); });
+    tonesEl.appendChild(b);
+  });
+  const custom = document.createElement("label");
+  custom.className = "tone custom"; custom.title = "Custom";
+  custom.innerHTML = '<span class="glyph">+</span><input type="color" id="color" value="#3a86c0" />';
+  tonesEl.appendChild(custom);
+  $("color").addEventListener("input", (e) => {
+    const { h, s, l } = hexToHsl(e.target.value);
+    S.tone = "custom"; S.hue = h; S.sat = s; S.light = l; apply();
+  });
+
+  $("copyBtn").addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText($("code").textContent);
+      const btn = $("copyBtn"), old = btn.textContent;
+      btn.textContent = "copied ✓"; setTimeout(() => (btn.textContent = old), 1300);
+    } catch (_) {}
+  });
+
+  // =====================================================================
+  // LANDING PAGE EXTRAS
+  // =====================================================================
+
+  // scroll progress bar
+  const progressBar = $("progressBar");
+  function updateProgress() {
+    const h = document.documentElement;
+    const scrolled = h.scrollTop / (h.scrollHeight - h.clientHeight);
+    progressBar.style.width = (scrolled * 100) + "%";
+  }
+  window.addEventListener("scroll", updateProgress, { passive: true });
+  updateProgress();
+
+  // scroll reveal
+  const io = new IntersectionObserver((entries) => {
+    for (const e of entries) {
+      if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); }
+    }
+  }, { threshold: 0.12 });
+  document.querySelectorAll(".reveal").forEach((el) => io.observe(el));
+
+  // subtle parallax on the hero rect — counters the tilt slightly toward cursor
+  const heroRect = $("heroRect");
+  if (heroRect) {
+    const heroWrap = heroRect.parentElement;
+    document.addEventListener("mousemove", (e) => {
+      const cx = window.innerWidth / 2, cy = window.innerHeight / 2;
+      const dx = (e.clientX - cx) / cx, dy = (e.clientY - cy) / cy;
+      heroWrap.style.animation = "none";
+      heroWrap.style.transform = `rotate(${-6 + dx * 2}deg) translate(${dx * 8}px, ${dy * 8}px)`;
+    });
+  }
+
+  // ---- init ----
+  centerRect();
+  apply();
+  window.addEventListener("resize", apply);
+})();
+</script>
+</body>
+</html>
